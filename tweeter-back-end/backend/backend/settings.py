@@ -75,8 +75,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # Use the MySQL database engine
+        'NAME': 'social_networking_app',          # Replace with your actual database name
+        'USER': 'root',          # Replace with your actual database username
+        'PASSWORD': '',  # Replace with your actual database password
+        'HOST': 'localhost',                   # Use 'localhost' if the database is on the same machine
+        'PORT': '3306',                        # Replace with your actual database port (MySQL default is 3306)
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
