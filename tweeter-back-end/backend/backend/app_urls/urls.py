@@ -1,7 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
-from views import UserList, PostList
+from ..views.views import UserList, PostList
 
 urlpatterns = [
     path('users/', UserList.as_view(), name='user-list'),
