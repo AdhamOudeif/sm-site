@@ -29,3 +29,14 @@ class Post(models.Model):
     class Meta:
         app_label = 'backend'
         db_table = 'post'        
+
+class Comment(models.Model):
+    CommentId = models.AutoField(primary_key=True)
+    PostID = models.ForeignKey(Post, on_delete=models.CASCADE, db_column='PostID')
+    UserID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='UserID')
+    Content = models.TextField()
+    Timestamp = models.DateTimeField()
+    LikesCount = models.IntegerField()
+    class Meta:
+        app_label = 'backend'
+        db_table = 'comment'    
