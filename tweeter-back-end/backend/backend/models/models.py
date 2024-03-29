@@ -43,6 +43,10 @@ class Comment(models.Model):
 
 class Friendship(models.Model):
     FriendshipID = models.AutoField(primary_key=True)
-    User1ID = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends1')
-    User2ID = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends2')
+    User1ID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='User1ID', related_name='friends1')
+    User2ID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='User2ID', related_name='friends2')
     Status = models.CharField(max_length=20)
+
+    class Meta:
+        app_label = 'backend'
+        db_table = 'friendship'    
