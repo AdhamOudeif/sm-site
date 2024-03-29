@@ -40,3 +40,9 @@ class Comment(models.Model):
     class Meta:
         app_label = 'backend'
         db_table = 'comment'    
+
+class Friendship(models.Model):
+    FriendshipID = models.AutoField(primary_key=True)
+    User1ID = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends1')
+    User2ID = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends2')
+    Status = models.CharField(max_length=20)
