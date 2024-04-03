@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Use the MySQL database engine
-        'NAME': 'social_networking_app',          # Replace with your actual database name
+        'NAME': 'sm_database',          # Replace with your actual database name
         'USER': 'root',          # Replace with your actual database username
         'PASSWORD': '',  # Replace with your actual database password
         'HOST': 'localhost',                   # Use 'localhost' if the database is on the same machine

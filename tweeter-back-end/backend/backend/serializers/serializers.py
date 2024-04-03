@@ -22,3 +22,13 @@ class FriendsPostList(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+
+class PostCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ('UserID', 'Content', 'Photo')
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('UserID', 'PostID', 'Content')

@@ -21,11 +21,11 @@ class Post(models.Model):
     PostID = models.AutoField(primary_key=True)
     UserID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='UserID')
     Content = models.TextField()
-    Photo = models.CharField(max_length=255)
+    Photo = models.CharField(max_length=255, blank=True, null=True)
     Timestamp = models.DateTimeField()
-    LikesCount = models.IntegerField()
-    CommentsCount = models.IntegerField()
-    SharesCount = models.IntegerField()
+    LikesCount = models.IntegerField(default=0)
+    CommentsCount = models.IntegerField(default=0)
+    SharesCount = models.IntegerField(default=0)
     class Meta:
         app_label = 'backend'
         db_table = 'post'        
@@ -36,7 +36,7 @@ class Comment(models.Model):
     UserID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='UserID')
     Content = models.TextField()
     Timestamp = models.DateTimeField()
-    LikesCount = models.IntegerField()
+    LikesCount = models.IntegerField(default=0)
     class Meta:
         app_label = 'backend'
         db_table = 'comment'    
