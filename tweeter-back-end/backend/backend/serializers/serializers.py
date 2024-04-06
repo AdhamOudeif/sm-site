@@ -32,3 +32,9 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('UserID', 'PostID', 'Content')
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['Username', 'Email', 'Password', 'FirstName', 'LastName', 'Birthdate', 'Gender']
+        extra_kwargs = {'Password': {'write_only': True}}

@@ -4,7 +4,7 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models.models import Friendship, User, Post, Comment
-from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserSerializer, PostSerializer, CommentSerializer
+from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserCreateSerializer, UserSerializer, PostSerializer, CommentSerializer
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
@@ -71,8 +71,6 @@ class CommentCreateView(generics.CreateAPIView):
         else:
             # Handle case where UserID or PostID is missing in the request data
             raise ValueError("User and Post ID are required")
-        
-# TODO: Adding Likes to Posts and Comments    
 
 class PostLikeCreateView(APIView):
     def post(self, request, post_id):
@@ -93,3 +91,22 @@ class CommentLikeCreateView(APIView):
             return Response({"message": "Comment liked successfully"}, status=status.HTTP_200_OK)
         except Comment.DoesNotExist:
             return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+class UserCreateView(generics.CreateAPIView):
+    serializer_class = UserCreateSerializer
+
+    def create_user(self,request):
+        # Extract request data
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email')
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        # Validate request data
+        if not (username and password and email):
+            return Response({"error": "Username, password, and email are required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Create user object
+        user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
+        # Save user object
+        user.save()
+        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
