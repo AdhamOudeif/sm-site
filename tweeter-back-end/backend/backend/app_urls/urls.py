@@ -10,4 +10,6 @@ urlpatterns = [
     path('friends/posts/<int:user_id>/', FriendsPostList.as_view(), name='friends-post-list'),
     path('posts/create/', PostCreateView.as_view(), name='post-create'),
     path('posts/<int:post_id>/comments/create/', CommentCreateView.as_view(), name='comment-create'),
+    path('posts/<int:post_id>/like/', PostLikeCreateView.as_view(), name='post-like-create'),
+    path('comments/<int:comment_id>/like/', CommentLikeCreateView.as_view(), name='comment-like-create'),
 ]

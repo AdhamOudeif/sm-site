@@ -1,6 +1,7 @@
 # myapp/views.py
 
 from rest_framework import generics, status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models.models import Friendship, User, Post, Comment
 from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserSerializer, PostSerializer, CommentSerializer
@@ -72,3 +73,23 @@ class CommentCreateView(generics.CreateAPIView):
             raise ValueError("User and Post ID are required")
         
 # TODO: Adding Likes to Posts and Comments    
+
+class PostLikeCreateView(APIView):
+    def post(self, request, post_id):
+        try:
+            post = Post.objects.get(PostID=post_id)
+            post.LikesCount += 1
+            post.save()
+            return Response({"message": "Post liked successfully"}, status=status.HTTP_200_OK)
+        except Post.DoesNotExist:
+            return Response({"error": "Post does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+class CommentLikeCreateView(APIView):
+    def post(self, request, comment_id):
+        try:
+            comment = Comment.objects.get(CommentId=comment_id)
+            comment.LikesCount += 1
+            comment.save()
+            return Response({"message": "Comment liked successfully"}, status=status.HTTP_200_OK)
+        except Comment.DoesNotExist:
+            return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
