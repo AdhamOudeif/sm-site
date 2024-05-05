@@ -17,6 +17,11 @@ class User(models.Model):
         app_label = 'backend'
         db_table = 'user'
 
+    def __str__(self):
+        model_name = self.__class__.__name__
+        fields_str = ", ".join((f"{field.name}={getattr(self, field.name)}" for field in self._meta.fields))
+        return f"{model_name}({fields_str})"
+
 class Post(models.Model):
     PostID = models.AutoField(primary_key=True)
     UserID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='UserID')
@@ -30,6 +35,11 @@ class Post(models.Model):
         app_label = 'backend'
         db_table = 'post'        
 
+    def __str__(self):
+        model_name = self.__class__.__name__
+        fields_str = ", ".join((f"{field.name}={getattr(self, field.name)}" for field in self._meta.fields))
+        return f"{model_name}({fields_str})"
+
 class Comment(models.Model):
     CommentId = models.AutoField(primary_key=True)
     PostID = models.ForeignKey(Post, on_delete=models.CASCADE, db_column='PostID')
@@ -41,6 +51,11 @@ class Comment(models.Model):
         app_label = 'backend'
         db_table = 'comment'    
 
+    def __str__(self):
+        model_name = self.__class__.__name__
+        fields_str = ", ".join((f"{field.name}={getattr(self, field.name)}" for field in self._meta.fields))
+        return f"{model_name}({fields_str})"
+
 class Friendship(models.Model):
     FriendshipID = models.AutoField(primary_key=True)
     User1ID = models.ForeignKey(User, on_delete=models.CASCADE, db_column='User1ID', related_name='friends1')
@@ -50,3 +65,8 @@ class Friendship(models.Model):
     class Meta:
         app_label = 'backend'
         db_table = 'friendship'    
+
+    def __str__(self):
+        model_name = self.__class__.__name__
+        fields_str = ", ".join((f"{field.name}={getattr(self, field.name)}" for field in self._meta.fields))
+        return f"{model_name}({fields_str})"
