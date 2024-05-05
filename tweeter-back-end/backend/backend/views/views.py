@@ -95,18 +95,12 @@ class CommentLikeCreateView(APIView):
 class UserCreateView(generics.CreateAPIView):
     serializer_class = UserCreateSerializer
 
-    def create_user(self,request):
-        # Extract request data
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        # Validate request data
-        if not (username and password and email):
-            return Response({"error": "Username, password, and email are required"}, status=status.HTTP_400_BAD_REQUEST)
-        # Create user object
-        user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
-        # Save user object
-        user.save()
-        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()  # Django's built-in authentication system will hash the password automatically
