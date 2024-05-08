@@ -44,3 +44,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         # Hash the password before saving the user
         validated_data['Password'] = make_password(validated_data['Password'])
         return User.objects.create(**validated_data)
+    
+class UserLoginSerializer(serializers.Serializer):
+    username_or_email = serializers.CharField()
+    password = serializers.CharField()

@@ -4,7 +4,8 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models.models import Friendship, User, Post, Comment
-from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserCreateSerializer, UserSerializer, PostSerializer, CommentSerializer
+from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserCreateSerializer, UserLoginSerializer, UserSerializer, PostSerializer, CommentSerializer
+from django.contrib.auth.hashers import check_password
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
@@ -104,3 +105,31 @@ class UserCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save()  # Django's built-in authentication system will hash the password automatically
+
+class UserLoginView(generics.CreateAPIView):
+    serializer_class = UserLoginSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Retrieve username/email and password from the request
+        username_or_email = serializer.validated_data.get('username_or_email')
+        password = serializer.validated_data.get('password')
+
+        # Check if the username/email exists
+        try:
+            user = User.objects.get(Username=username_or_email)
+        except User.DoesNotExist:
+            try:
+                user = User.objects.get(Email=username_or_email)
+            except User.DoesNotExist:
+                return Response({"error": "Invalid username/email or password"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify password
+        if check_password(password, user.Password):
+            # Password is correct, user authenticated
+            return Response({"message": "User authenticated successfully"}, status=status.HTTP_200_OK)
+        else:
+            # Password is incorrect
+            return Response({"error": "Invalid username/email or password"}, status=status.HTTP_400_BAD_REQUEST)
