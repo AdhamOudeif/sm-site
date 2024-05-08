@@ -4,7 +4,8 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models.models import Friendship, User, Post, Comment
-from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserSerializer, PostSerializer, CommentSerializer
+from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserCreateSerializer, UserLoginSerializer, UserSerializer, PostSerializer, CommentSerializer
+from django.contrib.auth.hashers import check_password
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
@@ -71,8 +72,6 @@ class CommentCreateView(generics.CreateAPIView):
         else:
             # Handle case where UserID or PostID is missing in the request data
             raise ValueError("User and Post ID are required")
-        
-# TODO: Adding Likes to Posts and Comments    
 
 class PostLikeCreateView(APIView):
     def post(self, request, post_id):
@@ -93,3 +92,44 @@ class CommentLikeCreateView(APIView):
             return Response({"message": "Comment liked successfully"}, status=status.HTTP_200_OK)
         except Comment.DoesNotExist:
             return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+class UserCreateView(generics.CreateAPIView):
+    serializer_class = UserCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()  # Django's built-in authentication system will hash the password automatically
+
+class UserLoginView(generics.CreateAPIView):
+    serializer_class = UserLoginSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Retrieve username/email and password from the request
+        username_or_email = serializer.validated_data.get('username_or_email')
+        password = serializer.validated_data.get('password')
+
+        # Check if the username/email exists
+        try:
+            user = User.objects.get(Username=username_or_email)
+        except User.DoesNotExist:
+            try:
+                user = User.objects.get(Email=username_or_email)
+            except User.DoesNotExist:
+                return Response({"error": "Invalid username/email or password"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify password
+        if check_password(password, user.Password):
+            # Password is correct, user authenticated
+            return Response({"message": "User authenticated successfully"}, status=status.HTTP_200_OK)
+        else:
+            # Password is incorrect
+            return Response({"error": "Invalid username/email or password"}, status=status.HTTP_400_BAD_REQUEST)
