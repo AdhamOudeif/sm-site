@@ -1,10 +1,12 @@
 # myapp/views.py
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models.models import Friendship, User, Post, Comment
-from ..serializers.serializers import CommentCreateSerializer, PostCreateSerializer, UserCreateSerializer, UserLoginSerializer, UserSerializer, PostSerializer, CommentSerializer
+from ..serializers.serializers import CommentCreateSerializer, FriendRequestSerializer, PostCreateSerializer, UserCreateSerializer, UserLoginSerializer, UserSerializer, PostSerializer, CommentSerializer
 from django.contrib.auth.hashers import check_password
 
 class UserList(generics.ListAPIView):
@@ -133,3 +135,144 @@ class UserLoginView(generics.CreateAPIView):
         else:
             # Password is incorrect
             return Response({"error": "Invalid username/email or password"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class SendFriendRequestCreateView(generics.CreateAPIView):
+    serializer_class = FriendRequestSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Extract user IDs from the request data
+        user1_id = self.request.data.get('User1ID')
+        user2_id = self.request.data.get('User2ID')
+        # Ensure that user1_id is smaller than user2_id
+        if user1_id > user2_id:
+            user1_id, user2_id = user2_id, user1_id
+
+        # Convert user IDs to User instances
+        user1 = User.objects.get(pk=user1_id)
+        user2 = User.objects.get(pk=user2_id)
+
+        # Check if any friendship already exists with the specified users and status
+        if Friendship.objects.filter(User1ID=user1, User2ID=user2).exists():
+            friendship = Friendship.objects.get(User1ID=user1, User2ID=user2)
+            friendshipStatus = friendship.Status
+            
+            # Switch-like logic for different status cases
+            if friendshipStatus.lower() == 'pending':
+                return Response({"error": "Pending friendship already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            elif friendshipStatus.lower() == 'accepted':
+                return Response({"error": "Accepted friendship already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            elif friendshipStatus.lower() == 'rejected':
+                return Response({"error": "Declined friendship already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Handle other status cases if needed
+                pass
+
+        # Create a friendship entry with status='pending'
+        Friendship.objects.create(User1ID=user1, User2ID=user2, Status='pending')
+
+        return Response({"message": "Friend request sent successfully"}, status=status.HTTP_201_CREATED)
+    
+class AcceptFriendRequestView(generics.UpdateAPIView):
+    serializer_class = FriendRequestSerializer
+
+    def update(self, request, *args, **kwargs):
+        user1_id = self.request.data.get('User1ID')
+        user2_id = self.request.data.get('User2ID')
+        # Ensure that user1_id is smaller than user2_id
+        if user1_id > user2_id:
+            user1_id, user2_id = user2_id, user1_id
+
+        # Convert user IDs to User instances
+        user1 = User.objects.get(pk=user1_id)
+        user2 = User.objects.get(pk=user2_id)
+        # Retrieve the specific friendship instance
+        friendship = Friendship.objects.get(User1ID=user1, User2ID=user2)
+
+        # Retrieve the specific friendship instance or return 404 if not found
+        friendship = get_object_or_404(Friendship, User1ID=user1, User2ID=user2)
+
+        # Check if the friendship status is pending before accepting it
+        if friendship.Status.lower() != 'pending':
+            return Response({"error": "Friend request is not pending"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        # Update the status of the friendship to 'accepted'
+        friendship.Status = 'accepted'
+        friendship.save()
+        return Response({"message": "Friend request accepted successfully"}, status=status.HTTP_200_OK)
+
+class RejectFriendRequestView(generics.UpdateAPIView):
+    serializer_class = FriendRequestSerializer
+
+    def update(self, request, *args, **kwargs):
+        user1_id = self.request.data.get('User1ID')
+        user2_id = self.request.data.get('User2ID')
+        # Ensure that user1_id is smaller than user2_id
+        if user1_id > user2_id:
+            user1_id, user2_id = user2_id, user1_id
+
+        # Convert user IDs to User instances
+        user1 = User.objects.get(pk=user1_id)
+        user2 = User.objects.get(pk=user2_id)
+        # Retrieve the specific friendship instance
+        friendship = Friendship.objects.get(User1ID=user1, User2ID=user2)
+
+        # Retrieve the specific friendship instance or return 404 if not found
+        friendship = get_object_or_404(Friendship, User1ID=user1, User2ID=user2)
+
+        # Check if the friendship status is pending before accepting it
+        if friendship.Status.lower() != 'pending':
+            return Response({"error": "Friend request is not pending"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        # Update the status of the friendship to 'accepted'
+        friendship.Status = 'rejected'
+        friendship.save()
+        return Response({"message": "Friend request rejected successfully"}, status=status.HTTP_200_OK)
+    
+class FriendRequestListView(generics.ListAPIView):
+    serializer_class = UserSerializer  # Assuming you have a serializer for the User model
+
+    def get_queryset(self):
+        # Retrieve the user ID from the URL parameters
+        user_id = self.kwargs.get('user_id')
+
+        # Filter the queryset to retrieve all pending friendship requests where User1ID=user_id
+        queryset = Friendship.objects.filter(User1ID=user_id, Status='pending')
+
+        # Extract a list of UserID2 from the queryset
+        user_ids = queryset.values_list('User2ID', flat=True)
+
+        # Retrieve the corresponding User objects
+        users = User.objects.filter(pk__in=user_ids)
+
+        return users
+
+    def list(self, request, *args, **kwargs):
+        # Get the list of User objects who sent friend requests
+        users = self.get_queryset()
+
+        # Serialize the User objects
+        serializer = self.get_serializer(users, many=True)
+
+        # Return the serialized User objects as JSON response
+        return JsonResponse(serializer.data, safe=False)
+    
+class RemoveFriendView(generics.DestroyAPIView):
+    serializer_class = FriendRequestSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        # Extract user IDs from the request data
+        user1_id = self.request.data.get('User1ID')
+        user2_id = self.request.data.get('User2ID')
+        # Ensure that user1_id is smaller than user2_id
+        if user1_id > user2_id:
+            user1_id, user2_id = user2_id, user1_id
+
+        # Check if any friendship exists with the specified users
+        try:
+            friendship = Friendship.objects.get(User1ID=user1_id, User2ID=user2_id)
+            friendship.delete()
+            return Response({"message": "Friendship removed successfully"}, status=status.HTTP_200_OK)
+        except Friendship.DoesNotExist:
+            return Response({"error": "Friendship does not exist"}, status=status.HTTP_404_NOT_FOUND)
