@@ -1,7 +1,7 @@
 # myapp/serializers.py
 
 from rest_framework import serializers
-from ..models.models import User, Post, Comment
+from ..models.models import User, Post, Comment, Friendship
 from django.contrib.auth.hashers import make_password  # Import make_password
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,3 +48,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()
     password = serializers.CharField()
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Friendship
+        fields = ('User1ID', 'User2ID' )

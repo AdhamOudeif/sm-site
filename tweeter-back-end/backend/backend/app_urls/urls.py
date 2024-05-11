@@ -1,7 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
-from ..views.views import CommentCreateView, CommentLikeCreateView, FriendsPostList, PostCreateView, PostLikeCreateView, UserCreateView, UserList, PostList, CommentListByPostID, UserLoginView
+from ..views.views import AcceptFriendRequestView, CommentCreateView, CommentLikeCreateView, FriendRequestListView, FriendsPostList, PostCreateView, PostLikeCreateView, RejectFriendRequestView, SendFriendRequestCreateView, UserCreateView, UserList, PostList, CommentListByPostID, UserLoginView
 
 urlpatterns = [
     path('users/', UserList.as_view(), name='user-list'),
@@ -14,4 +14,9 @@ urlpatterns = [
     path('comments/<int:comment_id>/like/', CommentLikeCreateView.as_view(), name='comment-like-create'),
     path('users/create/', UserCreateView.as_view(), name='user-create'),
     path('login/', UserLoginView.as_view(), name='user-login'),
+    path('friend-request/send/', SendFriendRequestCreateView.as_view(), name='friend-request-create'),
+    path('friend-request/accept/', AcceptFriendRequestView.as_view(), name='friend-request-accept'),
+    path('friend-request/reject/', RejectFriendRequestView.as_view(), name='friend-request-reject'),
+    path('friend-requests/<int:user_id>/', FriendRequestListView.as_view(), name='friend-request-list'),
+
 ]
