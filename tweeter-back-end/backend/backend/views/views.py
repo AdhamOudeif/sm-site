@@ -257,3 +257,22 @@ class FriendRequestListView(generics.ListAPIView):
 
         # Return the serialized User objects as JSON response
         return JsonResponse(serializer.data, safe=False)
+    
+class RemoveFriendView(generics.DestroyAPIView):
+    serializer_class = FriendRequestSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        # Extract user IDs from the request data
+        user1_id = self.request.data.get('User1ID')
+        user2_id = self.request.data.get('User2ID')
+        # Ensure that user1_id is smaller than user2_id
+        if user1_id > user2_id:
+            user1_id, user2_id = user2_id, user1_id
+
+        # Check if any friendship exists with the specified users
+        try:
+            friendship = Friendship.objects.get(User1ID=user1_id, User2ID=user2_id)
+            friendship.delete()
+            return Response({"message": "Friendship removed successfully"}, status=status.HTTP_200_OK)
+        except Friendship.DoesNotExist:
+            return Response({"error": "Friendship does not exist"}, status=status.HTTP_404_NOT_FOUND)

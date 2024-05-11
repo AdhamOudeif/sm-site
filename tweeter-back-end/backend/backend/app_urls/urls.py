@@ -1,7 +1,7 @@
 # myapp/urls.py
 
 from django.urls import path
-from ..views.views import AcceptFriendRequestView, CommentCreateView, CommentLikeCreateView, FriendRequestListView, FriendsPostList, PostCreateView, PostLikeCreateView, RejectFriendRequestView, SendFriendRequestCreateView, UserCreateView, UserList, PostList, CommentListByPostID, UserLoginView
+from ..views.views import AcceptFriendRequestView, CommentCreateView, CommentLikeCreateView, FriendRequestListView, FriendsPostList, PostCreateView, PostLikeCreateView, RejectFriendRequestView, RemoveFriendView, SendFriendRequestCreateView, UserCreateView, UserList, PostList, CommentListByPostID, UserLoginView
 
 urlpatterns = [
     path('users/', UserList.as_view(), name='user-list'),
@@ -17,6 +17,7 @@ urlpatterns = [
     path('friend-request/send/', SendFriendRequestCreateView.as_view(), name='friend-request-create'),
     path('friend-request/accept/', AcceptFriendRequestView.as_view(), name='friend-request-accept'),
     path('friend-request/reject/', RejectFriendRequestView.as_view(), name='friend-request-reject'),
-    path('friend-requests/<int:user_id>/', FriendRequestListView.as_view(), name='friend-request-list'),
+    path('friend-request/get-all-pending/<int:user_id>/', FriendRequestListView.as_view(), name='friend-request-list'),
+    path('friend-request/remove/', RemoveFriendView.as_view(), name='friend-request-remove'),
 
 ]
