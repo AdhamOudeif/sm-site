@@ -116,15 +116,15 @@ class UserLoginView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         # Retrieve username/email and password from the request
-        username_or_email = serializer.validated_data.get('username_or_email')
+        username = serializer.validated_data.get('username')
         password = serializer.validated_data.get('password')
 
         # Check if the username/email exists
         try:
-            user = User.objects.get(Username=username_or_email)
+            user = User.objects.get(Username=username)
         except User.DoesNotExist:
             try:
-                user = User.objects.get(Email=username_or_email)
+                user = User.objects.get(Email=username)
             except User.DoesNotExist:
                 return Response({"error": "Invalid username/email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
