@@ -9,7 +9,7 @@ interface PostState {
   fetchPosts: () => Promise<void>;
   createPost: (content: string, photo?: string) => Promise<void>;
   likePost: (postId: number) => Promise<void>;
-  createComment: (postId: number, content: string) => Promise<void>;
+  createComment: (postId: number, content: string) => Promise<Comment>;
 }
 
 export const usePostStore = create<PostState>((set, get) => ({
@@ -22,7 +22,7 @@ export const usePostStore = create<PostState>((set, get) => ({
     try {
       const posts = await postService.getPosts();
       set({ posts, isLoading: false });
-    } catch (error) {
+    } catch {
       set({ error: 'Failed to fetch posts', isLoading: false });
     }
   },
@@ -30,8 +30,8 @@ export const usePostStore = create<PostState>((set, get) => ({
   createPost: async (content: string, photo?: string) => {
     try {
       const newPost = await postService.createPost({ content, photo });
-      set({ posts: [newPost, ...get().posts] });
-    } catch (error) {
+      set({ posts: [newPost, ...get().posts], error: null });
+    } catch {
       set({ error: 'Failed to create post' });
     }
   },
@@ -45,15 +45,16 @@ export const usePostStore = create<PostState>((set, get) => ({
             ? { ...post, LikesCount: post.LikesCount + 1 }
             : post
         ),
+        error: null
       });
     } catch (error) {
       set({ error: 'Failed to like post' });
     }
   },
 
-  createComment: async (postId: number, content: string) => {
+  createComment: async (postId: number, content: string): Promise<Comment> => {
     try {
-      const newComment = await postService.createComment(postId, content);
+      const newComment: Comment = await postService.createComment(postId, content);
       set({
         posts: get().posts.map(post =>
           post.PostID === postId
